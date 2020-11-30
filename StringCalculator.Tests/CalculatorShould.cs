@@ -82,5 +82,17 @@ namespace StringCalculator.Tests
             // Assert
             Assert.Equal(expected, actual);
         }
+
+        [Theory]
+        [InlineData("-1,2,-3", "Negatives not allowed: -1, -3")]
+        public void ThrowExceptionIfNegativeNumericStringInput(string input, string expected)
+        {
+            // Arrange
+            
+            // Act
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(() => _calculator.Add(input));
+            Assert.Equal(expected, exception.Message);
+        }
     }
 }
