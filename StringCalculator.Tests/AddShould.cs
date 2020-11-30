@@ -17,14 +17,18 @@ namespace StringCalculator.Tests
         [InlineData("1,2,3",6)]
         [InlineData("1,2,3,4",10)]
         [InlineData("3\n5\n3,9",20)]
+        [InlineData("//;\n1;2",3)]
+        [InlineData("//k\n1k2",3)]
         public void ReturnSumOfInput(string input, int number)
         {    
-            // Assert
+            // Arrange
             // Act
             var actual = calc.Add(input);
             // Assert
             Assert.Equal(number,actual);
         }
+
         
+
     }
 }
