@@ -6,6 +6,7 @@ namespace StringCalculator
 {
     public class Calculator
     {
+        
         public int Add(String input)
         {
             if (input == "")
@@ -21,28 +22,30 @@ namespace StringCalculator
             
             if (inputNumbers.Length > 1 && !input.StartsWith("//"))
             {
-                var sum = 0;
-                var isNegative = 0;
-                List<string> negativeNumbers = new List<string>();
+                var sum = 0; 
+                var negativeNumbers = new List<string>();
                 for (int i = 0; i < inputNumbers.Length; i++)
                 {
-                    if ((Int32.Parse(inputNumbers[i])) > 0)
+                    var inputNumbersInt = Int32.Parse(inputNumbers[i]);
+                    if (inputNumbersInt >= 0 && inputNumbersInt < 1000)
                     {
-                        sum = sum + Int32.Parse(inputNumbers[i]);
-                    } else if ((Int32.Parse(inputNumbers[i])) < 0)
+                        sum = sum + inputNumbersInt;
+                    } else if (inputNumbersInt < 0)
                     {
-                        isNegative++;
                         negativeNumbers.Add(inputNumbers[i]);
+                    } else if (inputNumbersInt >= 1000)
+                    {
+                        sum = 0;
                     }
                 }
-                if (isNegative > 0)
+                if (negativeNumbers.Count > 0)
                 {
                     var allNegatives = string.Join(", ", negativeNumbers);
                     Console.WriteLine("Negatives not allowed: "+allNegatives);
                     sum = 0;
                     // Need to return the negatives, not console write. But the 'allNegatives' is a string. . 
                 }
-                else if (isNegative == 0)
+                else
                 {
                     return sum;
                 }
@@ -59,8 +62,8 @@ namespace StringCalculator
                 }
                 return sum;
             }
-
-
+            
+                
             return 0;
         }
 

@@ -20,6 +20,7 @@ namespace StringCalculator
             Console.WriteLine(calc.Add("//;\n1;2"));
             Console.WriteLine(calc.Add("//k\n1k2"));
             Console.WriteLine(calc.Add("-1,2,-3"));
+            Console.WriteLine(calc.Add("1000,1001,2"));
 
         }
     }
