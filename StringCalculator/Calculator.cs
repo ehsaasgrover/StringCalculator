@@ -1,111 +1,66 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace StringCalculator
 {
     public class Calculator
     {
-        
-        public int Add(String input)
+        public int Add(string input)
         {
             if (input == "") return 0;
 
-            var inputNumbers = input.Split(new[] {"," , "\n"}, StringSplitOptions.RemoveEmptyEntries);
-            
-            if (inputNumbers.Length == 1) return Convert.ToInt16(input);
+            // 0. split the delimiter declaration and the numbers to calc
+            // 1. get the delimiters
+            // 2. split the numbers to calc by delimiters
+            // 3. sum the parsed numbers
 
-            if (inputNumbers.Length > 1 && !input.StartsWith("//"))
-            {
-                return MultipleNumericStringInputs(inputNumbers);
-            }
+            var hasCustomDelimiter = input.StartsWith("//");
+            var defaultDelimiters = new[] {",", "\n"};
 
-            if (inputNumbers.Length > 1 && input.Contains("]["))
+            string[] delimiters;
+            string numbersWithDelimiters;
+            if (hasCustomDelimiter)
             {
-                return MultipleNumericStringInputsGivenDifferentLengthDelimiters(inputNumbers);
+                var gibberish = input.Split('\n');
+                var delimiterDeclaration = gibberish[0];
+                delimiters = ExtractCustomDelimiters(delimiterDeclaration);
+                numbersWithDelimiters = gibberish[1];
             }
-            
-            if (inputNumbers.Length > 1 && input.StartsWith("//[") && !input.Contains("]["))
+            else
             {
-                return MultipleNumericStringInputsGivenDelimiterOfAnyLength(inputNumbers);
-            }
-            
-            if (inputNumbers.Length > 1 && input.StartsWith("//"))
-            {
-                return MultipleNumericStringInputsGivenSingleDelimiter(inputNumbers);
-            }
-            
-            return 0;
-        }
-        
-        private static int MultipleNumericStringInputs(string[] inputNumbers)
-        {
-            var sum = 0;
-            var negativeNumbers = new List<string>();
-            foreach (var i in inputNumbers)
-            {
-                var inputNumbersInt = int.Parse(i);
-                if (inputNumbersInt >= 0 && inputNumbersInt < 1000)
-                {
-                    sum += inputNumbersInt;
-                }
-                else if (inputNumbersInt < 0)
-                {
-                    negativeNumbers.Add(i);
-                }
+                delimiters = defaultDelimiters;
+                numbersWithDelimiters = input;
             }
 
-            if (negativeNumbers.Count <= 0) return sum;
-            var allNegatives = string.Join(", ", negativeNumbers);
-            throw new ArgumentException("Negatives not allowed: " + allNegatives);
-        }
-        
-        private static int MultipleNumericStringInputsGivenSingleDelimiter(string[] inputNumbers)
-        {
-            var delimiter = inputNumbers[0].Remove(0, 2);
-            var inputNumbersWithoutDelimiter = inputNumbers[1].Split(new[] {delimiter}, StringSplitOptions.RemoveEmptyEntries);
-            var sum = 0;
-            foreach (var i in inputNumbersWithoutDelimiter)
+            var stringNumbers = numbersWithDelimiters.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
+            var intNumbers = stringNumbers.Select(int.Parse).ToArray();
+
+            // check if numbers are negative -> throw exception with negative numbers as message
+            var negativeNumbers = intNumbers.Where(n => n < 0).ToArray();
+            var hasNegativeNumbers = negativeNumbers.Any();
+            if (hasNegativeNumbers)
             {
-                sum += int.Parse(i);
+                var allNegatives = string.Join(", ", negativeNumbers);
+                throw new ArgumentException("Negatives not allowed: " + allNegatives);
             }
-            return sum;
-        }
-        
-        private static int MultipleNumericStringInputsGivenDelimiterOfAnyLength(string[] inputNumbers)
-        {
-            var inputDelimiter = inputNumbers[0].Remove(0, 3);
-            var delimiterLength = inputDelimiter.Length - 1;
-            var delimiter = inputDelimiter.Substring(0, delimiterLength);
-            var inputNumbersWithoutDelimiter = inputNumbers[1].Split(new[] {delimiter}, StringSplitOptions.RemoveEmptyEntries);
-            var sum = 0;
-            foreach (var i in inputNumbersWithoutDelimiter)
-            {
-                sum += int.Parse(i);
-            }
-            return sum;
+
+            // check if numbers are >= 1000 -> ignore
+            var intNumbersLessThan1000 = intNumbers.Where(n => n < 1000);
+            return intNumbersLessThan1000.Sum();
         }
 
-        private static int MultipleNumericStringInputsGivenDifferentLengthDelimiters(string[] inputNumbers)
+        private static string[] ExtractCustomDelimiters(string delimiterDeclaration)
         {
-            var inputDelimiters = inputNumbers[0].Remove(0, 2);
-            var delimiterStart = 0;
-            var delimiterList = new List<string>();
-            for (var i = 0; i < inputDelimiters.Length; i++)
+            var hasDelimitersOfAnyLength = delimiterDeclaration[2].Equals('[') &&
+                                           delimiterDeclaration[^1].Equals(']');
+            if (hasDelimitersOfAnyLength)
             {
-                if (inputDelimiters[i] == '[')
-                {
-                    delimiterStart = i;
-                }
-                else if (inputDelimiters[i] == ']')
-                {
-                    var delimiterEnd = i;
-                    var delimiter = inputDelimiters.Substring(delimiterStart+1, delimiterEnd - delimiterStart - 1 );
-                    delimiterList.Add(delimiter);
-                }
+                var inputDelimiters = delimiterDeclaration.Substring(3).TrimEnd(']');
+                var delimiters = inputDelimiters.Split("][");
+                return delimiters;
             }
-            var inputNumbersWithoutDelimiter = inputNumbers[1].Split(delimiterList.ToArray(), StringSplitOptions.RemoveEmptyEntries);
-            return inputNumbersWithoutDelimiter.Sum(number => int.Parse(number));
+            var delimiter = delimiterDeclaration[2];
+            return new[] {delimiter.ToString()};
         }
     }
 }
